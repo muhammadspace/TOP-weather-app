@@ -14,7 +14,7 @@ function displayError() {
 async function process(response) {
     let raw = await response.json();
 
-    const reversegeo = await fetch(`http://api.openweathermap.org/geo/1.0/reverse?lat=${raw.coord.lat}&lon=${raw.coord.lon}&limit=1&appid=${key}`);
+    const reversegeo = await fetch(`http://api.openweathermap.org/geo/1.0/reverse?lat=${raw.coord.lat}&lon=${raw.coord.lon}&limit=1&appid=${key}`, { mode: 'cors' });
     const rgdata = await reversegeo.json();
 
     const location = rgdata['0'].name;
