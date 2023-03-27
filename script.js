@@ -14,7 +14,7 @@ function displayError() {
 async function process(response) {
     let raw = await response.json();
 
-    const reversegeo = await fetch(`http://api.openweathermap.org/geo/1.0/reverse?lat=${raw.coord.lat}&lon=${raw.coord.lon}&limit=1&appid=${key}`);
+    const reversegeo = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${raw.coord.lat}&lon=${raw.coord.lon}&limit=1&appid=${key}`, { mode: 'cors' });
     const rgdata = await reversegeo.json();
 
     const location = rgdata['0'].name;
@@ -43,7 +43,7 @@ async function getCoords(location) {
     let latlon;
 
     try {
-        const geocoder = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${key}`, { mode: 'cors' });
+        const geocoder = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${key}`, { mode: 'cors' });
         const gcdata = await geocoder.json();
         latlon = { lat: gcdata[0].lat, lon: gcdata[0].lon};
     }
@@ -75,7 +75,7 @@ async function renderApp(location, unit) {
         icon = document.querySelector('.icon'),
         details = document.querySelector('.details');
     
-    icon.src = `http://openweathermap.org/img/w/${weather.icon}.png`;
+    icon.src = `https://openweathermap.org/img/w/${weather.icon}.png`;
     temp.innerText = Number.parseInt(weather.temp);
     loc.innerText = weather.location;
     desc.innerText = weather.desc;
@@ -104,8 +104,6 @@ async function renderApp(location, unit) {
             details.appendChild(div);
         }
     }
-
-    
 }
 
 let searchVal = 'cairo';
