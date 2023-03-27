@@ -39,33 +39,79 @@ async function getCoords(location) {
     return latlon;
 }
 
-async function getWeatherData(location) {
+async function getWeatherData(location, unit) {
     let coords = await getCoords(location);
     
-    const api = `https://api.openweathermap.org/data/2.5/weather?lat=${coords.lat}&lon=${coords.lon}&appid=${key}&units=metric`; 
+    const api = `https://api.openweathermap.org/data/2.5/weather?lat=${coords.lat}&lon=${coords.lon}&appid=${key}&units=${unit}`; 
     const response = await fetch(api, { mode: 'cors' });
     
     let data = process(response);
-
     
     return data;
 }
 
-let img = document.querySelector('.icon');
-let weatherData;
-
-getWeatherData('sydney').then(data => {
-    console.log(data);
-    img.src = `http://openweathermap.org/img/w/${data.icon}.png`;
-    // getBG(data.desc);
-    weatherData = data;
-});
-
-async function getBG(weather) {
+async function renderApp(location, unit) {
+    let weather = await getWeatherData(location, unit);
     console.log(weather);
-    let resp = await fetch(`https://api.giphy.com/v1/gifs/translate?api_key=NC7tSsVVX0krEMhGlUPOAVgNV25JAeg2&s=${weather}`, { mode: 'cors' });
-    let json = await resp.json();
+    
+    let temp = document.querySelector('.temperature'),
+        loc = document.querySelector('.location'),
+        desc = document.querySelector('.desc'),
+        icon = document.querySelector('.icon'),
+        details = document.querySelector('.details');
+    
+    icon.src = `http://openweathermap.org/img/w/${weather.icon}.png`;
+    temp.innerText = Number.parseInt(weather.temp);
+    loc.innerText = weather.location;
+    desc.innerText = weather.desc;
 
-    let card = document.querySelector('.card');
-    card.style.backgroundImage = `url(${json.data.images.original.url})`;
+    details.replaceChildren();
+    for (const [key, val] of Object.entries(weather)) {
+        if (key === 'cloudiness' || key === 'feels_like' || key === 'humidity' || key === 'wind_speed') {
+            let div = document.createElement('div'),
+                h4 = document.createElement('h4'),
+                p = document.createElement('p');
+                
+            h4.innerText = key.replace('_', ' ');
+            h4.innerText = h4.innerText.replace(h4.innerText.charAt(0), h4.innerText.charAt(0).toUpperCase());
+            p.innerText = val;
+            
+            p.classList.add(key);
+            if (key === 'wind_speed') {
+                if (unit === 'metric') 
+                    p.innerText += ' km/h';
+                else
+                    p.innerText += ' mph';
+            }
+
+                
+            div.append(h4, p);
+            details.appendChild(div);
+        }
+    }
+
+    
 }
+
+let searchVal = 'cairo';
+let unit = 'metric';
+renderApp(searchVal, unit);
+
+const searchField = document.querySelector('#search-field');
+searchField.addEventListener('input', (e) => searchVal = searchField.value);
+
+const searchBtn = document.querySelector('.search-button');
+searchBtn.addEventListener('click', (e) => renderApp(searchVal, unit));
+
+const toggleUnit = document.querySelector('.toggle-unit');
+toggleUnit.addEventListener('click', (e) => {
+    if (toggleUnit.innerText === 'Fahrenheit') {
+        toggleUnit.innerText = 'Celsius';
+        unit = 'imperial';
+    }
+    else {
+        toggleUnit.innerText = 'Fahrenheit';
+        unit = 'metric';
+    }
+    renderApp(searchVal, unit);
+});
