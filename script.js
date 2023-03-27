@@ -1,6 +1,16 @@
 // I am aware that the api key is exposed publicly. Since this app uses no backend and the api key is free, I left it exposed for simplicity. 
 const key = `c62194ab34e8d4cc6bb83533e537fbb7`
 
+function displayError() {
+    if (!document.querySelector('span')) {
+        let search = document.querySelector('.search-wrapper');
+        let span = document.createElement('span');
+        span.innerText = 'No results found! Please try again.';
+        span.classList.add('error');
+        search.appendChild(span);
+    }
+}
+
 async function process(response) {
     let raw = await response.json();
 
@@ -10,8 +20,6 @@ async function process(response) {
     const location = rgdata['0'].name;
     const state = rgdata['0'].state;
     const country = rgdata['0'].country;
-
-    console.log(raw);
 
     return {
         location,
@@ -32,27 +40,34 @@ async function process(response) {
 }
 
 async function getCoords(location) {
-    const geocoder = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${key}`, { mode: 'cors' });
-    const gcdata = await geocoder.json();
-    let latlon = { lat: gcdata[0].lat, lon: gcdata[0].lon};
+    let latlon;
+
+    try {
+        const geocoder = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${key}`, { mode: 'cors' });
+        const gcdata = await geocoder.json();
+        latlon = { lat: gcdata[0].lat, lon: gcdata[0].lon};
+    }
+    catch (err) {
+        displayError();
+    }
     
     return latlon;
 }
 
 async function getWeatherData(location, unit) {
     let coords = await getCoords(location);
-    
+    let data;
+
     const api = `https://api.openweathermap.org/data/2.5/weather?lat=${coords.lat}&lon=${coords.lon}&appid=${key}&units=${unit}`; 
     const response = await fetch(api, { mode: 'cors' });
+    data = process(response);
     
-    let data = process(response);
     
     return data;
 }
 
 async function renderApp(location, unit) {
     let weather = await getWeatherData(location, unit);
-    console.log(weather);
     
     let temp = document.querySelector('.temperature'),
         loc = document.querySelector('.location'),
