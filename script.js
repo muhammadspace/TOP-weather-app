@@ -47,14 +47,25 @@ async function getWeatherData(location) {
     
     let data = process(response);
 
+    
     return data;
 }
 
-let img = document.querySelector('img');
+let img = document.querySelector('.icon');
 let weatherData;
 
 getWeatherData('sydney').then(data => {
     console.log(data);
     img.src = `http://openweathermap.org/img/w/${data.icon}.png`;
+    // getBG(data.desc);
     weatherData = data;
 });
+
+async function getBG(weather) {
+    console.log(weather);
+    let resp = await fetch(`https://api.giphy.com/v1/gifs/translate?api_key=NC7tSsVVX0krEMhGlUPOAVgNV25JAeg2&s=${weather}`, { mode: 'cors' });
+    let json = await resp.json();
+
+    let card = document.querySelector('.card');
+    card.style.backgroundImage = `url(${json.data.images.original.url})`;
+}
